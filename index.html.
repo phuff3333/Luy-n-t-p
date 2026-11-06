@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luyện Tập 🎀</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:linear-gradient(135deg,#ffe5f0,#eee6ff,#dcf8ef);color:#65536e}
+header{text-align:center;padding:30px 10px}
+h1{color:#d77da9;font-size:38px}
+main{max-width:950px;margin:auto;padding:14px}
+.panel{background:#ffffffdf;padding:20px;border-radius:22px;margin-bottom:20px}
+h2{color:#bd82aa}
+input{width:100%;padding:14px;margin:7px 0;border:2px solid #f2d8e9;border-radius:13px;font-size:15px}
+button{border:0;border-radius:12px;padding:12px;background:#e9b7d3;color:#754d69;font-weight:bold;margin:4px}
+.add{width:100%}
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.game{background:white;border:2px solid #f8e5f0;border-radius:18px;padding:15px;text-align:center}
+.emoji{font-size:38px}
+.play{background:#dff4ed;color:#568b78}
+.delete{background:#ffe1e6}
+#player{display:none}
+iframe{width:100%;height:65vh;min-height:320px;border:0;border-radius:15px;background:white}
+.note{font-size:13px;color:#927c9e}
+</style>
+</head>
+<body>
+<header>
+<h1>🎀 Luyện Tập 🎀</h1>
+<p>Góc nhỏ chơi game yêu thích của bạn ♡</p>
+</header>
+<main>
+<section class="panel">
+<h2>🌸 Thêm game mới</h2>
+<input id="name" placeholder="Tên game...">
+<input id="link" placeholder="Đường dẫn game https://...">
+<button class="add" onclick="addGame()">＋ Thêm game</button>
+<p class="note">Nhập đường dẫn game có hỗ trợ nhúng để chơi ngay tại đây.</p>
+</section>
+
+<section class="panel" id="player">
+<h2 id="playing">🎮 Đang chơi</h2>
+<button onclick="openTab()">↗ Mở tab mới</button>
+<button class="delete" onclick="closeGame()">Đóng game</button>
+<iframe id="frame" allow="fullscreen; autoplay; gamepad" allowfullscreen></iframe>
+<p class="note">Nếu game không hiện, trang game có thể chặn nhúng.</p>
+</section>
+
+<section class="panel">
+<h2>🧸 Bộ sưu tập game</h2>
+<input id="search" placeholder="🔍 Tìm game..." oninput="render()">
+<div class="games" id="games"></div>
+</section>
+</main>
+<footer style="text-align:center;padding:25px">Made with ♡</footer>
+<script>
+let list=JSON.parse(localStorage.getItem("games")||"[]");
+let current="";
+function save(){localStorage.setItem("games",JSON.stringify(list))}
+function addGame(){
+let n=document.getElementById("name").value.trim();
+let l=document.getElementById("link").value.trim();
+if(!n||!l){alert("Hãy nhập tên và link game nhé!");return}
+try{let u=new URL(l);if(!["http:","https:"].includes(u.protocol))throw 0}
+catch(e){alert("Link không hợp lệ!");return}
+list.push({id:Date.now(),name:n,link:l});
+save();document.getElementById("name").value="";
+document.getElementById("link").value="";render();
+}
+function play(id){
+let g=list.find(x=>x.id===id);
+current=g.link;
+document.getElementById("playing").textContent="🎮 "+g.name;
+document.getElementById("frame").src=current;
+document.getElementById("player").style.display="block";
+document.getElementById("player").scrollIntoView({behavior:"smooth"});
+}
+function openTab(){if(current)window.open(current,"_blank")}
+function closeGame(){
+document.getElementById("frame").src="about:blank";
+document.getElementById("player").style.display="none";current="";
+}
+function removeGame(id){
+if(confirm("Xóa game này nhé?")){
+list=list.filter(g=>g.id!==id);save();render();
+}}
+function render(){
+let area=document.getElementById("games");
+let q=document.getElementById("search").value.toLowerCase();
+area.innerHTML="";
+let found=list.filter(g=>g.name.toLowerCase().includes(q));
+if(!found.length){
+area.innerHTML="<p>🌷 Chưa có game nào! Hãy thêm game nhé ♡</p>";return;
+}
+found.forEach(g=>{
+let card=document.createElement("div");card.className="game";
+let emoji=document.createElement("div");emoji.className="emoji";emoji.textContent="🎮";
+let title=document.createElement("h3");title.textContent=g.name;
+let p=document.createElement("button");p.className="play";p.textContent="▶ Chơi ngay";p.onclick=()=>play(g.id);
+let d=document.createElement("button");d.className="delete";d.textContent="🗑 Xóa";d.onclick=()=>removeGame(g.id);
+card.append(emoji,title,p,d);area.append(card);
+});
+}
+render();
+</script>
+</body>
+</html>
